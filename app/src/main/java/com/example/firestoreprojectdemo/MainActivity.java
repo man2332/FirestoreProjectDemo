@@ -3,6 +3,7 @@ package com.example.firestoreprojectdemo;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -12,22 +13,30 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.EventListener;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.FirebaseFirestoreException;
+import com.google.firebase.firestore.SetOptions;
 
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 public class MainActivity extends AppCompatActivity {
 
-    private static final String KEY_TITLE = "title";
-    private static final String KEY_DESCRIPTION = "description";
+    private static final String TAG = "MainActivity";
+
+    private static final String KEY_TITLE = "titleEditText";
+    private static final String KEY_DESCRIPTION = "descriptionEditText";
 
     FirebaseFirestore firebaseFirestore;
     DocumentReference documentReference;
 
 
-    EditText title;
-    EditText description;
+    EditText titleEditText;
+    EditText descriptionEditText;
 
     TextView textViewData;
 
@@ -36,8 +45,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        title = findViewById(R.id.edit_text_title);
-        description = findViewById(R.id.edit_text_description);
+        titleEditText = findViewById(R.id.edit_text_title);
+        descriptionEditText = findViewById(R.id.edit_text_description);
 
         textViewData = findViewById(R.id.text_view_data);
 
@@ -45,9 +54,30 @@ public class MainActivity extends AppCompatActivity {
         documentReference = firebaseFirestore.document("Notes/First Note");
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        documentReference.addSnapshotListener(this, new EventListener<DocumentSnapshot>() {
+            @Override
+            public void onEvent(@Nullable DocumentSnapshot documentSnapshot, @Nullable FirebaseFirestoreException e) {
+                if(e != null){
+                    Log.d(TAG, "onEvent: ");
+                    return;
+                }
+                if(documentSnapshot.exists()){
+                    Map<String, Object> map = documentSnapshot.getData();
+
+                    textViewData.setText(String.format("Title: %s Description: %s", map.get(KEY_TITLE), map.get(KEY_DESCRIPTION)));
+                }else{
+                    textViewData.setText("NO DOCUMENT FOUND!!!");
+                }
+            }
+        });
+    }
+
     public void saveNote(View view) {
-        String titleValue = title.getText().toString();
-        String descriptionValue = description.getText().toString();
+        String titleValue = titleEditText.getText().toString();
+        String descriptionValue = descriptionEditText.getText().toString();
 
         Map<String, Object> map = new HashMap<>();
         map.put(KEY_TITLE, titleValue);
@@ -79,10 +109,32 @@ public class MainActivity extends AppCompatActivity {
                     String description = documentSnapshot.getString(KEY_DESCRIPTION);
 
                     textViewData.setText(String.format("Title: %s Description: %s", title, description));
+                }else{
+                    textViewData.setText("No document found!");
                 }
             }
         });
 
+    }
+
+    public void updateDescription(View view) {
+        String description = descriptionEditText.getText().toString();
+
+        //Map<String, Object> map = new HashMap<>();
+        //map.put(KEY_DESCRIPTION, description);
+        //documentReference.set(map, SetOptions.merge());
+
+
+        documentReference.update(KEY_DESCRIPTION, description);
+    }
+
+    public void deleteDescription(View view) {
+        documentReference.update(KEY_DESCRIPTION, FieldValue.delete());
+
+    }
+
+    public void deleteNote(View view) {
+        documentReference.delete();
     }
 }
 

@@ -27,13 +27,30 @@
         android:layout_height="wrap_content"
         android:onClick="saveNote"
         android:text="Save" />
-
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="updateDescription"
+        android:text="Update description" />
 
     <Button
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:onClick="loadNote"
         android:text="Load" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="deleteDescription"
+        android:text="Delete description" />
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:onClick="deleteNote"
+        android:text="Delete note" />
+
 
     <TextView
         android:id="@+id/text_view_data"
