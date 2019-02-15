@@ -52,6 +52,9 @@ public class MainActivity extends AppCompatActivity {
 
         firebaseFirestore = FirebaseFirestore.getInstance();
         documentReference = firebaseFirestore.document("Notes/First Note");
+//        documentReference = firebaseFirestore.collection("Notes").document("First Note");
+
+
     }
 
     @Override
